@@ -102,12 +102,12 @@
 
 <h1>CURRENT AFFAIRS PDF</h1>
 
-<div class="card" onclick="openPDF()"><span>Open PDF</span></div>
+<div class="card" onclick="openPDF(openPDF)"><span>Open PDF</span></div>
 
 <iframe id="viewer"></iframe>
 
 <script>
-  function openPDF(){
+  function openPDF(openPDF){
     const viewer = document.getElementById('viewer');
     viewer.src = "ca1.pdf";  // your pdf file path
     viewer.classList.add('show');
