@@ -1,112 +1,119 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Instagram Smily- Demo</title>
+  <title>Current Affairs PDF</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #fafafa;
-      margin: 0;
-      padding: 0;
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+    *{box-sizing:border-box;}
+    html,body{
+      height:100%;
+      margin:0;
+      font-family:'Poppins',sans-serif;
+      overflow-x:hidden;
     }
-    h1 {
-      text-align: center;
-      margin: 30px 0;
-      color: #262626;
+
+    /* 🔥 crazy animated rainbow bg */
+    body{
+      animation: hueShift 20s linear infinite;
+      background:linear-gradient(45deg,#fa709a,#fee140,#42e695,#5c6cfa,#c471ed,#f64f59,#fbd786,#cfe3ff);
+      background-size:500% 500%;
+      padding:80px 0;
+      text-align:center;
     }
-    /* Instagram-style container */
-    .insta-clone {
-      max-width: 600px;
-      margin: 0 auto 50px auto;
-      background: #fff;
-      border: 1px solid #dbdbdb;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow:0 4px 20px rgba(0,0,0,0.1);
+    @keyframes hueShift{
+      0%{background-position:0% 50%;}
+      50%{background-position:100% 50%;}
+      100%{background-position:0% 50%;}
     }
-    .insta-header {
-      display: flex;
-      align-items: center;
-      padding: 12px;
-    }
-    .insta-header img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-right: 12px;
-    }
-    .insta-header span {
-      font-weight: 600;
-    }
-    .insta-image img {
-      width: 100%;
-      display: block;
-    }
-    .insta-actions {
-      padding: 10px;
-    }
-    .insta-actions button {
-      background: none;
-      border: none;
-      font-size: 18px;
-      margin-right: 10px;
-      cursor: pointer;
-    }
-    /* Follow button */
-    .follow-btn {
-      display:inline-block;
-      padding: 10px 20px;
-      background: #0095f6;
+
+    h1{
       color:#fff;
+      text-shadow:0 3px 12px rgba(0,0,0,0.4);
+      letter-spacing:2px;
+      margin-bottom:60px;
+      font-weight:700;
+    }
+
+    .card{
+      display:inline-block;
+      width:320px;
+      height:200px;
+      backdrop-filter: blur(8px);
+      background:rgba(255,255,255,0.2);
+      border:2px solid rgba(255,255,255,0.4);
+      box-shadow:0 15px 40px rgba(0,0,0,0.25);
+      border-radius:30px;
+      color:#fff;
+      font-size:22px;
       font-weight:600;
-      border-radius:6px;
-      text-decoration:none;
-      margin:20px auto;
-      text-align:center;
-      transition:.3s;
+      line-height:200px;
+      margin-bottom:70px;
+      cursor:pointer;
+      overflow:hidden;
+      position:relative;
+      transition:transform .5s;
     }
-    .follow-btn:hover {
-      background:#0073cc;
+    .card:hover{
+      transform:scale(1.08) rotate(-4deg);
     }
-    /* Instagram embed container */
-    .insta-embed {
-      max-width:600px;
-      margin:40px auto;
-      text-align:center;
+    .card::before{
+      content:"";
+      position:absolute;
+      top:-50%;
+      left:-50%;
+      width:200%;
+      height:200%;
+      background:linear-gradient(60deg,#ff6ec4,#7873f5,#42e695,#fdc830,#f36da4,#58b7ff);
+      animation: rotateBtn 10s linear infinite;
+    }
+    @keyframes rotateBtn{
+      from{ transform:rotate(0deg);}
+      to{ transform:rotate(360deg);}
+    }
+    .card span{
+      position:relative;
+      z-index:10;
+    }
+
+    /* Viewer Styles */
+    iframe{
+      width:90%;
+      height:650px;
+      margin:0 auto 80px auto;
+      display:none;
+      border-radius:25px;
+      border:none;
+      box-shadow:0 20px 45px rgba(0,0,0,0.5);
+      opacity:0;
+      transform:translateY(100px) scale(0.8) rotate(-10deg);
+      transition:transform 1s cubic-bezier(.25,.8,.25,1),
+                 opacity 1s cubic-bezier(.25,.8,.25,1);
+      background:#fff;
+    }
+    iframe.show{
+      display:block;
+      opacity:1;
+      transform:translateY(0) scale(1) rotate(0deg);
     }
   </style>
 </head>
 <body>
 
-<h1>Instagram Smily- Demo</h1>
+<h1>CURRENT AFFAIRS PDF</h1>
 
-<!-- 1️⃣ Instagram-style clone post -->
-<div class="insta-clone">
-  <div class="insta-header">
-    <img src="https://via.placeholder.com/40" alt="Profile Pic">
-    <span>smily-</span>
-  </div>
-  <div class="insta-image">
-    <img src="https://via.placeholder.com/600x600" alt="Post Image">
-  </div>
-  <div class="insta-actions">
-    <button>❤️</button>
-    <button>💬</button>
-    <button>🔗</button>
-  </div>
-</div>
+<div class="card" onclick="openPDF()"><span>Open PDF</span></div>
 
-<!-- 2️⃣ Instagram embed post -->
-<div class="insta-embed">
-  <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/CuSmilyExample/" data-instgrm-version="14" style="width:100%; max-width:600px; margin:0 auto;">
-  </blockquote>
-  <script async src="//www.instagram.com/embed.js"></script>
-</div>
+<iframe id="viewer"></iframe>
 
-<!-- 3️⃣ Follow button -->
-<a href="https://www.instagram.com/smily-/" target="_blank" class="follow-btn">Follow @smily-</a>
+<script>
+  function openPDF(){
+    const viewer = document.getElementById('viewer');
+    viewer.src = "pdfs/current_affairs.pdf";  // your pdf file path
+    viewer.classList.add('show');
+    viewer.scrollIntoView({behavior:'smooth'});
+  }
+</script>
 
 </body>
 </html>
