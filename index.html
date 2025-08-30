@@ -1,119 +1,420 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Latest Current Affairs </title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FlixBox — Netflix‑style Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Alex:wght@400;700&display=swap');
-    *{box-sizing:border-box;}
-    html,body{
-      height:100%;
-      margin:0;
-      font-family:'Alex',sans-serif;
-      overflow-x:hidden;
+    /* --------------------
+       Base / Reset
+       -------------------- */
+    :root{
+      --bg:#0b0b0f;        /* App background */
+      --panel:#13131a;     /* Panels / cards */
+      --muted:#9aa3b2;     /* Secondary text */
+      --text:#e6e9ef;      /* Primary text */
+      --primary:#e50914;   /* Netflix red */
+      --ring: #3a3a46;     /* Focus ring */
     }
-
-    /* 🔥 crazy animated rainbow bg */
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
-      animation: hueShift 20s linear infinite;
-      background:linear-gradient(45deg,#fa709a,#fee140,#42e695,#5c6cfa,#c471ed,#f64f59,#fbd786,#cfe3ff);
-      background-size:500% 500%;
-      padding:80px 0;
-      text-align:center;
+      margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:radial-gradient(1200px 500px at 70% -20%, #1b1b25 0%, rgba(27,27,37,0) 60%) , var(--bg);
+      color:var(--text);
     }
-    @keyframes hueShift{
-      0%{background-position:0% 50%;}
-      50%{background-position:100% 50%;}
-      100%{background-position:0% 50%;}
-    }
+    a{color:inherit; text-decoration:none}
+    button{font:inherit}
 
-    h1{
-      color:#fff;
-      text-shadow:0 3px 12px rgba(0,0,0,0.4);
-      letter-spacing:2px;
-      margin-bottom:60px;
-      font-weight:700;
+    /* --------------------
+       Top Navigation
+       -------------------- */
+    .nav{
+      position:sticky; top:0; z-index:50;
+      display:flex; align-items:center; gap:18px;
+      padding:14px 20px; backdrop-filter:saturate(140%) blur(6px);
+      background:linear-gradient(180deg, rgba(11,11,15,.8), rgba(11,11,15,.55));
+      border-bottom:1px solid rgba(255,255,255,.06);
     }
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px}
+    .brand-badge{width:28px; height:28px; display:grid; place-items:center; border-radius:7px; background:var(--primary); box-shadow:0 6px 20px rgba(229,9,20,.35)}
+
+    .nav-links{display:flex; gap:14px; flex-wrap:wrap}
+    .nav-links a{opacity:.95; padding:8px 10px; border-radius:10px; color:var(--muted)}
+    .nav-links a.active, .nav-links a:hover{color:var(--text); background:#191922}
+
+    .search{
+      margin-left:auto; display:flex; align-items:center; gap:10px;
+      background:#151520; border:1px solid #212131; border-radius:14px; padding:8px 12px; min-width:240px;
+    }
+    .search input{flex:1; background:transparent; border:0; outline:0; color:var(--text)}
+    .icon{width:18px; height:18px; opacity:.8}
+
+    .profile{display:flex; align-items:center; gap:8px; margin-left:6px}
+    .avatar{width:28px; height:28px; border-radius:50%; background:url('https://i.pravatar.cc/80?img=67') center/cover no-repeat; border:1px solid #262636}
+
+    /* --------------------
+       Hero Section
+       -------------------- */
+    .hero{position:relative; isolation:isolate;}
+    .hero-media{height:54vh; min-height:420px; display:grid; place-items:end; background:#0a0a12; overflow:hidden; border-bottom:1px solid rgba(255,255,255,.06)}
+    .hero-media img{width:100%; height:100%; object-fit:cover; opacity:.65; filter:saturate(110%) contrast(105%)}
+    .hero-gradient{position:absolute; inset:0; background:linear-gradient(180deg, rgba(11,11,15,0) 0%, rgba(11,11,15,.6) 55%, var(--bg) 100%)}
+
+    .hero-content{position:absolute; inset:0; display:grid; align-content:end; padding:24px 22px 30px; gap:14px}
+    .hero .title{font-size:clamp(28px, 6vw, 48px); font-weight:800; line-height:1.05; text-shadow:0 4px 22px rgba(0,0,0,.45)}
+    .hero .meta{display:flex; gap:12px; flex-wrap:wrap; color:var(--muted)}
+    .hero .cta{display:flex; gap:10px; margin-top:6px}
+    .btn{
+      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px;
+      background:#ffffff; color:#111; border:0; cursor:pointer; font-weight:700
+    }
+    .btn.secondary{background:#232332; color:#fff; border:1px solid #2b2b3b}
+    .btn .icon{width:20px; height:20px}
+
+    /* --------------------
+       Rows / Carousels
+       -------------------- */
+    .section{padding:20px}
+    .row{position:relative; margin-top:6px}
+    .row-title{font-weight:800; font-size:18px; margin:14px 4px}
+
+    .scroller{display:grid; grid-auto-flow:column; grid-auto-columns:clamp(160px, 17vw, 240px); gap:12px; overflow-x:auto; padding:10px 6px 14px; scroll-snap-type:x mandatory}
+    .scroller::-webkit-scrollbar{height:10px}
+    .scroller::-webkit-scrollbar-thumb{background:#242438; border-radius:99px}
 
     .card{
-      display:inline-block;
-      width:320px;
-      height:200px;
-      backdrop-filter: blur(8px);
-      background:rgba(255,255,255,0.2);
-      border:2px solid rgba(255,255,255,0.4);
-      box-shadow:0 15px 40px rgba(0,0,0,0.25);
-      border-radius:30px;
-      color:#fff;
-      font-size:22px;
-      font-weight:600;
-      line-height:200px;
-      margin-bottom:70px;
-      cursor:pointer;
-      overflow:hidden;
-      position:relative;
-      transition:transform .5s;
+      position:relative; border-radius:14px; overflow:hidden; background:var(--panel); height:clamp(95px, 12vw, 140px);
+      display:grid; align-content:stretch; cursor:pointer; scroll-snap-align:start; transition:transform .18s ease, box-shadow .18s ease
     }
-    .card:hover{
-      transform:scale(1.08) rotate(-4deg);
-    }
-    .card::before{
-      content:"";
-      position:absolute;
-      top:-50%;
-      left:-50%;
-      width:200%;
-      height:200%;
-      background:linear-gradient(60deg,#ff6ec4,#7873f5,#42e695,#fdc830,#f36da4,#58b7ff);
-      animation: rotateBtn 10s linear infinite;
-    }
-    @keyframes rotateBtn{
-      from{ transform:rotate(0deg);}
-      to{ transform:rotate(360deg);}
-    }
-    .card span{
-      position:relative;
-      z-index:10;
-    }
+    .card:hover{transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,.35)}
+    .card img{width:100%; height:100%; object-fit:cover}
+    .badge{position:absolute; top:8px; left:8px; background:rgba(0,0,0,.6); color:#fff; font-size:12px; padding:4px 7px; border-radius:999px}
+    .card .hover-overlay{position:absolute; inset:0; display:grid; place-items:center; opacity:0; transition:opacity .18s; background:linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.6) 100%)}
+    .card:hover .hover-overlay{opacity:1}
+    .card .hover-actions{display:flex; gap:10px}
+    .chip{font-size:12px; color:var(--muted)}
 
-    /* Viewer Styles */
-    iframe{
-      width:90%;
-      height:650px;
-      margin:0 auto 80px auto;
-      display:none;
-      border-radius:25px;
-      border:none;
-      box-shadow:0 20px 45px rgba(0,0,0,0.5);
-      opacity:0;
-      transform:translateY(100px) scale(0.8) rotate(-10deg);
-      transition:transform 1s cubic-bezier(.25,.8,.25,1),
-                 opacity 1s cubic-bezier(.25,.8,.25,1);
-      background:#fff;
-    }
-    iframe.show{
-      display:block;
-      opacity:1;
-      transform:translateY(0) scale(1) rotate(0deg);
+    .arrow{position:absolute; top:50%; translate:0 -50%; background:rgba(14,14,20,.8); border:1px solid #242438; padding:8px; border-radius:999px; cursor:pointer; display:grid; place-items:center}
+    .arrow:hover{background:#1a1a26}
+    .arrow.left{left:-2px}
+    .arrow.right{right:-2px}
+
+    /* --------------------
+       Modal / Player
+       -------------------- */
+    .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(5,5,9,.65); backdrop-filter:blur(4px); z-index:100}
+    .modal.active{display:grid}
+    .dialog{width:min(920px, 92vw); background:#0f0f16; border:1px solid #242438; border-radius:16px; overflow:hidden; box-shadow:0 20px 80px rgba(0,0,0,.6)}
+    .dialog-media{position:relative; background:#000}
+    .dialog-media video{width:100%; height:auto; display:block; background:#000}
+    .dialog-body{padding:16px}
+    .dialog-header{display:flex; justify-content:space-between; align-items:start; gap:10px}
+    .dialog-title{font-size:22px; font-weight:800}
+    .dialog-meta{display:flex; gap:12px; color:var(--muted)}
+    .tag{padding:2px 8px; border:1px solid #2b2b3b; border-radius:999px; font-size:12px}
+    .close{background:transparent; border:0; color:#aaa; cursor:pointer}
+
+    /* --------------------
+       Responsive tweaks
+       -------------------- */
+    @media (max-width:720px){
+      .nav-links{display:none}
+      .search{min-width:0; flex:1}
+      .hero .cta{flex-wrap:wrap}
     }
   </style>
 </head>
 <body>
+  <!-- Top Navigation -->
+  <nav class="nav">
+    <div class="brand">
+      <div class="brand-badge" aria-hidden="true">🎬</div>
+      <span>FlixBox</span>
+    </div>
+    <div class="nav-links">
+      <a href="#" class="active" data-filter="all">Home</a>
+      <a href="#" data-filter="movie">Movies</a>
+      <a href="#" data-filter="series">Series</a>
+      <a href="#" data-filter="trending">Trending</a>
+      <a href="#" data-filter="mylist">My List</a>
+    </div>
+    <label class="search" title="Search titles">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" placeholder="Search movies, series…" />
+    </label>
+    <div class="profile" title="Profile">
+      <div class="avatar"></div>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+  </nav>
 
-<h1>CURRENT AFFAIRS PDF</h1>
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-media">
+      <img id="heroImg" alt="Hero Backdrop" src="https://images.unsplash.com/photo-1517602302552-471fe67acf66?q=80&w=1600&auto=format&fit=crop" />
+      <div class="hero-gradient"></div>
+    </div>
+    <div class="hero-content">
+      <div class="title" id="heroTitle">Night City Chronicles</div>
+      <div class="meta" id="heroMeta">
+        <span>2023</span>
+        <span>•</span>
+        <span class="chip">Sci‑Fi • Action</span>
+        <span>•</span>
+        <span>⭐ 8.7</span>
+      </div>
+      <div class="cta">
+        <button class="btn" id="heroPlay">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Play
+        </button>
+        <button class="btn secondary" id="heroMore">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          More Info
+        </button>
+      </div>
+    </div>
+  </section>
 
-<div class="card" onclick="openPDF(openPDF)"><span>Open PDF</span></div>
+  <!-- Rows -->
+  <main id="content"></main>
 
-<iframe id="viewer"></iframe>
+  <!-- Player Modal -->
+  <div class="modal" id="playerModal" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true">
+      <div class="dialog-media">
+        <video id="video" controls playsinline></video>
+      </div>
+      <div class="dialog-body">
+        <div class="dialog-header">
+          <div>
+            <div class="dialog-title" id="dialogTitle">Title</div>
+            <div class="dialog-meta" id="dialogMeta"></div>
+          </div>
+          <button class="close" id="closeModal" title="Close">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <p id="dialogDesc" style="color:var(--muted); margin:10px 0 0"></p>
+      </div>
+    </div>
+  </div>
 
-<script>
-  function openPDF(openPDF){
-    const viewer = document.getElementById('viewer');
-    viewer.src = "ca1.pdf";  // your pdf file path
-    viewer.classList.add('show');
-    viewer.scrollIntoView({behavior:'smooth'});
-  }
-</script>
+  <script>
+    // ----------------------------
+    // Demo catalog (no external APIs)
+    // ----------------------------
+    const SAMPLE_VIDEO = "https://cdn.jsdelivr.net/gh/iamshaunjp/web-dev-playlist/lesson-26/vids/clip.mp4"; // lightweight sample clip
+    const catalog = [
+      {
+        id:"nc-001", kind:"movie", title:"Night City Chronicles", year:2023, rating:8.7,
+        tags:["Sci‑Fi","Action"], trending:true, 
+        thumb:"https://images.unsplash.com/photo-1542228262-3d663b306a55?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1517602302552-471fe67acf66?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO,
+        desc:"In a neon‑drenched mega‑city, a data courier uncovers an AI conspiracy that could rewrite humanity."
+      },
+      { id:"wd-002", kind:"series", title:"Wild Dominion", year:2022, rating:8.4, tags:["Drama","Thriller"], trending:true,
+        thumb:"https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1516822003754-cca485356ecb?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"A dynasty’s secrets spill as a mineral empire faces collapse." },
+      { id:"sd-003", kind:"movie", title:"Stardust Drift", year:2021, rating:7.9, tags:["Adventure","Family"], trending:false,
+        thumb:"https://images.unsplash.com/photo-1520857014576-2c4f4c972b57?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"Two siblings convert a barn into a rocket to find their missing dad." },
+      { id:"pr-004", kind:"movie", title:"Phantom Route", year:2020, rating:7.3, tags:["Mystery","Road"], trending:true,
+        thumb:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1496469888073-80de7e952517?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"A trucker haunted by numbers deciphers a map hidden in mile markers." },
+      { id:"os-005", kind:"series", title:"Orbital Station 9", year:2024, rating:8.9, tags:["Sci‑Fi"], trending:true,
+        thumb:"https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"A stranded crew must choose between survival and a message from Earth." },
+      { id:"bb-006", kind:"movie", title:"Broken Bay", year:2019, rating:7.1, tags:["Crime"], trending:false,
+        thumb:"https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"An ex‑cop returns home to a coastal town run by smugglers." },
+      { id:"ht-007", kind:"series", title:"House of Talons", year:2023, rating:8.2, tags:["Fantasy"], trending:false,
+        thumb:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"A falconer princess negotiates peace between rival kingdoms." },
+      { id:"jr-008", kind:"movie", title:"Jetstream Runners", year:2022, rating:7.8, tags:["Sports","Action"], trending:true,
+        thumb:"https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"Street racers hack drones to draft through impossible winds." },
+      { id:"dp-009", kind:"movie", title:"Deep Pulse", year:2024, rating:8.1, tags:["Tech","Thriller"], trending:true,
+        thumb:"https://images.unsplash.com/photo-1496171367470-9ed9a91ea931?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"A coder discovers a heartbeat hidden in the global network." },
+      { id:"se-010", kind:"series", title:"Saffron Empire", year:2018, rating:7.0, tags:["Historical"], trending:false,
+        thumb:"https://images.unsplash.com/photo-1504805572947-34fad45aed93?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1504805572947-34fad45aed93?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"Merchants fight for spice routes across the Indian Ocean." },
+      { id:"gl-011", kind:"movie", title:"Glowline", year:2021, rating:7.5, tags:["Romance","Indie"], trending:false,
+        thumb:"https://images.unsplash.com/photo-1496483353456-90997957cf99?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"Two artists fall in love through a citywide light installation." },
+      { id:"rt-012", kind:"series", title:"Rust Tide", year:2020, rating:7.6, tags:["Post‑apoc"], trending:false,
+        thumb:"https://images.unsplash.com/photo-1523861751938-6f150d6d2e66?q=80&w=900&auto=format&fit=crop",
+        backdrop:"https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop",
+        src:SAMPLE_VIDEO, desc:"Scavengers sail a flooded world searching for a dry myth." },
+    ];
 
+    // ----------------------------
+    // DOM helpers
+    // ----------------------------
+    const $ = (sel, ctx=document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+    // Local storage for "My List"
+    const LS_KEY = 'flixbox.mylist.v1';
+    const getMyList = () => new Set(JSON.parse(localStorage.getItem(LS_KEY) || '[]'));
+    const setMyList = (set) => localStorage.setItem(LS_KEY, JSON.stringify([...set]));
+
+    // Build a row section
+    function buildRow(title, filterFn){
+      const section = document.createElement('section');
+      section.className = 'section';
+      section.innerHTML = `
+        <div class="row">
+          <div class="row-title">${title}</div>
+          <button class="arrow left" aria-label="Scroll left">⟵</button>
+          <div class="scroller"></div>
+          <button class="arrow right" aria-label="Scroll right">⟶</button>
+        </div>`;
+      const scroller = section.querySelector('.scroller');
+      const items = catalog.filter(filterFn);
+      items.forEach(movie => scroller.appendChild(buildCard(movie)));
+
+      const left = section.querySelector('.arrow.left');
+      const right = section.querySelector('.arrow.right');
+      left.addEventListener('click', () => scroller.scrollBy({left:-600, behavior:'smooth'}));
+      right.addEventListener('click', () => scroller.scrollBy({left:600, behavior:'smooth'}));
+      return section;
+    }
+
+    // Build a single card
+    function buildCard(movie){
+      const el = document.createElement('article');
+      el.className = 'card';
+      el.innerHTML = `
+        <img loading="lazy" src="${movie.thumb}" alt="${movie.title}">
+        <span class="badge">${movie.year}</span>
+        <div class="hover-overlay">
+          <div class="hover-actions">
+            <button class="btn" data-action="play">▶ Play</button>
+            <button class="btn secondary" data-action="info">More</button>
+          </div>
+        </div>`;
+
+      el.addEventListener('click', (e)=>{
+        const action = e.target.closest('button')?.dataset.action;
+        if(action === 'play'){ openModal(movie); }
+        else if(action === 'info'){ openModal(movie, true); }
+        else { openModal(movie, true);} // click anywhere opens info
+      });
+
+      // Right‑click / long‑press to toggle My List
+      el.addEventListener('contextmenu', (e)=>{
+        e.preventDefault(); toggleMyList(movie.id); drawRows();
+      });
+      return el;
+    }
+
+    // Draw all rows into <main>
+    function drawRows(mode='home'){
+      const container = document.getElementById('content');
+      container.innerHTML = '';
+      const mylist = getMyList();
+
+      const search = document.getElementById('searchInput').value.trim().toLowerCase();
+      const searchFilter = (m)=> m.title.toLowerCase().includes(search) || m.tags.join(' ').toLowerCase().includes(search);
+
+      const filters = {
+        home: [
+          ["Continue Watching", m=>m.trending],
+          ["Popular on FlixBox", m=>m.rating>=7.8],
+          ["Because you watched Sci‑Fi", m=>m.tags.includes('Sci‑Fi')],
+        ],
+        movie: [["Movies", m=>m.kind==='movie']],
+        series:[["Series", m=>m.kind==='series']],
+        trending:[["Trending Now", m=>m.trending]],
+        mylist:[["My List", m=>mylist.has(m.id)]],
+      };
+
+      const groups = filters[mode] || filters.home;
+      groups.forEach(([label, fn])=>{
+        const section = buildRow(label, (m)=> fn(m) && searchFilter(m));
+        container.appendChild(section);
+      });
+    }
+
+    // Hero wiring (first item)
+    function setHero(movie){
+      document.getElementById('heroImg').src = movie.backdrop;
+      document.getElementById('heroTitle').textContent = movie.title;
+      document.getElementById('heroMeta').innerHTML = `${movie.year} • <span class="chip">${movie.tags.join(' • ')}</span> • ⭐ ${movie.rating}`;
+
+      document.getElementById('heroPlay').onclick = ()=> openModal(movie);
+      document.getElementById('heroMore').onclick = ()=> openModal(movie, true);
+    }
+
+    // Modal / Player
+    const modal = document.getElementById('playerModal');
+    const video = document.getElementById('video');
+
+    function openModal(movie, pause=false){
+      $('#dialogTitle').textContent = movie.title;
+      $('#dialogMeta').innerHTML = `${movie.year} · ${movie.tags.map(t=>`<span class='tag'>${t}</span>`).join(' ')} · ⭐ ${movie.rating}`;
+      $('#dialogDesc').textContent = movie.desc;
+      video.src = movie.src;
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden','false');
+      if(!pause){ video.play().catch(()=>{}); }
+    }
+
+    function closeModal(){
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden','true');
+      video.pause();
+      video.currentTime = 0;
+      video.src = '';
+    }
+
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.classList.contains('active')) closeModal(); });
+
+    // My List helpers
+    function toggleMyList(id){
+      const s = getMyList();
+      s.has(id) ? s.delete(id) : s.add(id);
+      setMyList(s);
+    }
+
+    // Nav interactions
+    $$('.nav-links a').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        $$('.nav-links a').forEach(x=>x.classList.remove('active'));
+        a.classList.add('active');
+        drawRows(a.dataset.filter);
+      })
+    })
+
+    // Search
+    $('#searchInput').addEventListener('input', ()=>{
+      const active = $('.nav-links a.active')?.dataset.filter || 'home';
+      drawRows(active);
+    });
+
+    // Initialize
+    setHero(catalog[0]);
+    drawRows('home');
+  </script>
 </body>
 </html>
